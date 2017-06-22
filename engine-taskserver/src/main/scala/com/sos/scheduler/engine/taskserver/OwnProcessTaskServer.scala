@@ -6,6 +6,7 @@ import com.sos.scheduler.engine.taskserver.TaskServer.Terminated
 import com.sos.scheduler.engine.taskserver.data.TaskServerArguments
 import com.sos.scheduler.engine.taskserver.task.process.{JavaProcess, ProcessConfiguration, RichProcess}
 import java.io.File
+import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Promise}
 import spray.json._
 

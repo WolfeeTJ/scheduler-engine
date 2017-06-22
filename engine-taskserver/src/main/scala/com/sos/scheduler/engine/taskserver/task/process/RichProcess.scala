@@ -4,6 +4,7 @@ import com.sos.scheduler.engine.base.process.ProcessSignal
 import com.sos.scheduler.engine.base.process.ProcessSignal.{SIGKILL, SIGTERM}
 import com.sos.scheduler.engine.common.process.Processes._
 import com.sos.scheduler.engine.common.process.StdoutStderr.{Stderr, Stdout, StdoutStderrType, StdoutStderrTypes}
+import com.sos.scheduler.engine.common.scalautil.Closers.implicits.RichClosersCloser
 import com.sos.scheduler.engine.common.scalautil.FileUtils.implicits._
 import com.sos.scheduler.engine.common.scalautil.{ClosedFuture, HasCloser, Logger}
 import com.sos.scheduler.engine.common.system.OperatingSystem._
@@ -11,12 +12,13 @@ import com.sos.scheduler.engine.data.job.ReturnCode
 import com.sos.scheduler.engine.taskserver.task.process.RichProcess._
 import java.io.{BufferedOutputStream, OutputStream, OutputStreamWriter}
 import java.lang.ProcessBuilder.Redirect
+import scala.collection.JavaConversions._
 import java.lang.ProcessBuilder.Redirect.INHERIT
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Files.delete
 import java.nio.file.Path
 import org.jetbrains.annotations.TestOnly
-import scala.collection.JavaConversions._
+import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future, Promise, blocking}
 import scala.util.Try
 import scala.util.control.NonFatal
@@ -25,7 +27,7 @@ import scala.util.control.NonFatal
  * @author Joacim Zschimmer
  */
 class RichProcess protected[process](val processConfiguration: ProcessConfiguration, process: Process)
-  (implicit exeuctionContext: ExecutionContext)
+  (implicit executionContext: ExecutionContext)
 extends HasCloser with ClosedFuture {
 
   val pidOption: Option[Pid] = processToPidOption(process)
@@ -35,6 +37,11 @@ extends HasCloser with ClosedFuture {
    */
   lazy val stdinWriter = new OutputStreamWriter(new BufferedOutputStream(stdin), UTF_8)
   private val terminatedPromise = Promise[Unit]()
+
+  process match {
+    case o: AutoCloseable ⇒ closer.registerAutoCloseable(o)  // In case it's a WindowsProcess
+    case _ ⇒
+  }
 
   logger.info(s"Process started")
   Future {

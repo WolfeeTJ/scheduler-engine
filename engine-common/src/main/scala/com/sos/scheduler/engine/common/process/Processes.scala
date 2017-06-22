@@ -19,7 +19,11 @@ object Processes {
 
   def processToString(process: Process, pid: Option[Pid]) = pid map { _.toString } getOrElse process.toString
 
-  def processToPidOption(process: Process): Option[Pid] = ProcessesJava8pid.processToPid(process)
+  def processToPidOption(process: Process): Option[Pid] =
+    process match {
+      case process: WindowsProcess ⇒ process.pidOption
+      case _ ⇒ ProcessesJava8pid.processToPid(process)
+    }
 
   final case class Pid(number: Long) {
     def string = number.toString
@@ -55,6 +59,7 @@ object Processes {
       * @see https://bugs.openjdk.java.net/browse/JDK-8068370
       */
     def startRobustly(durations: Iterator[Duration] = RobustlyStartProcess.DefaultDurations.iterator): Process =
+    //try WindowsProcess.start(delegate)
       try delegate.start()
       catch {
         case TextFileBusyIOException(e) if durations.hasNext ⇒
