@@ -40,6 +40,7 @@ $WindowsSDK     = ${env:WINDOWS_NET_SDK_HOME}
 # ----------------------------------------------------------------------
 
 function ExecuteCommand([string] $command, [Array]$arguments) {
+    echo $process = Start-Process $command -NoNewWindow -Wait -PassThru -ArgumentList $arguments
     $process = Start-Process $command -NoNewWindow -Wait -PassThru -ArgumentList $arguments
     if ($process.exitCode -ne 0) {
         throw "Command failed with exit code $($process.exitCode): $command"
@@ -76,6 +77,8 @@ Get-ChildItem -Path $csharpJobApiBuildDirectory | Where {!$_.PSIsContainer -and 
 }
 # CompileCSharp
 $powershellRef = [PsObject].Assembly.Location
-ExecuteCommand "$WindowsSDK/csc" @("/nologo", "/warn:0", "/t:library", "/out:$ResultAdapterAssemblyDll",
-                                   "/recurse:""$BuildDirectory\clr\*.cs""",
-                                   "/reference:$powershellRef;""$ProxyDllResultDirectory\$Jni4NDllName""")
+# ExecuteCommand "$WindowsSDK\csc" @("/nologo", "/warn:0", "/t:library", "/out:$ResultAdapterAssemblyDll",
+#                                    "/recurse:""$BuildDirectory\clr\*.cs""",
+#                                    "/reference:$powershellRef;""$ProxyDllResultDirectory\$Jni4NDllName""")
+
+"C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /nologo /warn:0 /t:library /out:D:\git\sos\scheduler-engine\engine-taskserver-dotnet\target\classes\com\sos\scheduler\engine\taskserver\dotnet\dlls\com.sos-berlin.engine.engine-job-api-dotnet.dll /recurse:D:\git\sos\scheduler-engine\engine-taskserver-dotnet\target\jni4net-build\clr\*.cs /reference:C:\Windows\assembly\GAC_MSIL\System.Management.Automation\1.0.0.0__31bf3856ad364e35\System.Management.Automation.dll;D:\git\sos\scheduler-engine\engine-taskserver-dotnet\target\classes\com\sos\scheduler\engine\taskserver\dotnet\dlls\jni4net.n-0.8.8.0.dll"
